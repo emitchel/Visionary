@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "886563118843",
+    "firebase_url": "https://visionary-42cfe.firebaseio.com",
+    "project_id": "visionary-42cfe",
+    "storage_bucket": "visionary-42cfe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:886563118843:android:66494d2b639bc52a",
+        "android_client_info": {
+          "package_name": "com.erm.visionary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "886563118843-8sfhtap5gq7203cipq4eksfvs5n8ms2i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATxZ5Yvbyv6lPxFzPYeUotfGPvhCyG4HI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "886563118843-8sfhtap5gq7203cipq4eksfvs5n8ms2i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
