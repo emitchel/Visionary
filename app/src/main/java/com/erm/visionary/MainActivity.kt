@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.FileOutputStream
@@ -92,9 +93,15 @@ class MainActivity : AppCompatActivity() {
 
             if (photoFile != null && photoFile?.exists() == true) {
                 val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+                val firebaseOptions = FirebaseVisionFaceDetectorOptions.Builder()
+                    .setPerformanceMode(FirebaseVisionFaceDetectorOptions.ACCURATE)
+                    .setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
+                    .setClassificationMode(FirebaseVisionFaceDetectorOptions.ALL_CLASSIFICATIONS)
+                    .build()
                 val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
                 val detector = FirebaseVision.getInstance()
-                    .visionFaceDetector
+                    .getVisionFaceDetector(firebaseOptions)
+
                 val result = detector.detectInImage(firebaseImage)
                     .addOnSuccessListener {
                         val smiling = it.first().smilingProbability
