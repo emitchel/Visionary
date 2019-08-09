@@ -83,6 +83,12 @@
                     android:layout_height="wrap_content"
                     android:text="Text"
                     />
+            <Button
+                    android:id="@+id/btn_face"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Smile"
+                    />
 
         </LinearLayout>
     </LinearLayout>

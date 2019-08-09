@@ -16,10 +16,6 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.FileOutputStream
-import com.google.firebase.ml.vision.text.RecognizedLanguage
-import com.google.firebase.ml.vision.text.FirebaseVisionText
-
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -88,6 +84,24 @@ class MainActivity : AppCompatActivity() {
                     }
                     .addOnFailureListener {
                         showAlert("Failed to read text, exception")
+                    }
+            }
+        }
+
+        btn_face.setOnClickListener {
+
+            if (photoFile != null && photoFile?.exists() == true) {
+                val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+                val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
+                val detector = FirebaseVision.getInstance()
+                    .visionFaceDetector
+                val result = detector.detectInImage(firebaseImage)
+                    .addOnSuccessListener {
+                        val smiling = it.first().smilingProbability
+                        showAlert("Smiling probability $smiling")
+                    }
+                    .addOnFailureListener {
+                        showAlert("Failed to detect face, ex $it")
                     }
             }
         }
