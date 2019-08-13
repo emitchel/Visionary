@@ -27,26 +27,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         btn_capture.setOnClickListener {
-            camera?.captureImage { _, capturedImageBytes ->
-                photoFile = File(
-                    Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_PICTURES
-                    ), "${System.currentTimeMillis()}_visionary"
-                )
-
-                val outputStream = FileOutputStream(photoFile?.path)
-                try {
-                    outputStream.write(capturedImageBytes)
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                } finally {
-                    outputStream.close()
-                }
-
-                Glide.with(this@MainActivity).load(capturedImageBytes).into(picture)
-                camera?.visibility = View.GONE
-                picture.visibility = View.VISIBLE
-            }
+            captureAndSetImage()
         }
         btn_switch_camera.setOnClickListener { camera?.toggleFacing() }
         btn_retake.setOnClickListener {
@@ -109,6 +90,29 @@ class MainActivity : AppCompatActivity() {
                 .cloudImageLabeler
             labelImage(labeler)
             true
+        }
+    }
+
+    private fun captureAndSetImage() {
+        camera?.captureImage { _, capturedImageBytes ->
+            photoFile = File(
+                Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES
+                ), "${System.currentTimeMillis()}_visionary"
+            )
+
+            val outputStream = FileOutputStream(photoFile?.path)
+            try {
+                outputStream.write(capturedImageBytes)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            } finally {
+                outputStream.close()
+            }
+
+            Glide.with(this@MainActivity).load(capturedImageBytes).into(picture)
+            camera?.visibility = View.GONE
+            picture.visibility = View.VISIBLE
         }
     }
 
