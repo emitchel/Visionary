@@ -2,13 +2,11 @@ package com.erm.visionary
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-import android.content.DialogInterface
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.bumptech.glide.Glide
@@ -30,12 +28,24 @@ class MainActivity : AppCompatActivity() {
         btn_capture.setOnClickListener {
             captureAndSetImage {}
         }
-        btn_switch_camera.setOnClickListener { camera?.toggleFacing() }
+        btn_switch_camera.setOnClickListener {
+            btn_retake.performClick()
+            camera?.toggleFacing()
+        }
         btn_retake.setOnClickListener {
             photoFile = null
             picture.visibility = View.GONE
             camera.visibility = View.VISIBLE
         }
+
+        camera.setOnClickListener {
+            btn_capture.performClick()
+        }
+
+        picture.setOnClickListener {
+            btn_retake.performClick()
+        }
+
         btn_recognize_text.isLongClickable = true
         btn_recognize_text.setOnClickListener {
             val detector = FirebaseVision.getInstance()
@@ -182,14 +192,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAlert(text: String) {
-        AlertDialog.Builder(this)
-            .setTitle("Success")
-            .setMessage(text)
-            .setPositiveButton("Ok", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface?, which: Int) {
-                    dialog?.dismiss()
-                }
-            }).show()
+        tv_output.text = text
     }
 
     override fun onStart() {
