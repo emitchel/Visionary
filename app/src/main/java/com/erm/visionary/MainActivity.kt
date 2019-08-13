@@ -14,6 +14,8 @@ import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
+import com.google.firebase.ml.vision.label.FirebaseVisionImageLabeler
+import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.FileOutputStream
@@ -51,42 +53,17 @@ class MainActivity : AppCompatActivity() {
             picture.visibility = View.GONE
             camera.visibility = View.VISIBLE
         }
+        btn_recognize_text.isLongClickable = true
         btn_recognize_text.setOnClickListener {
-            if (photoFile != null && photoFile?.exists() == true) {
-                val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
-                val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
-                val detector = FirebaseVision.getInstance()
-                    .onDeviceTextRecognizer //.cloudRecognizer
-                val result = detector.processImage(firebaseImage)
-                    .addOnSuccessListener {
-                        val resultText = it.getText()
-                        showAlert(resultText)
-                        for (block in it.getTextBlocks()) {
-                            val blockText = block.getText()
-                            val blockConfidence = block.getConfidence()
-                            val blockLanguages = block.getRecognizedLanguages()
-                            val blockCornerPoints = block.getCornerPoints()
-                            val blockFrame = block.getBoundingBox()
-                            for (line in block.getLines()) {
-                                val lineText = line.getText()
-                                val lineConfidence = line.getConfidence()
-                                val lineLanguages = line.getRecognizedLanguages()
-                                val lineCornerPoints = line.getCornerPoints()
-                                val lineFrame = line.getBoundingBox()
-                                for (element in line.getElements()) {
-                                    val elementText = element.getText()
-                                    val elementConfidence = element.getConfidence()
-                                    val elementLanguages = element.getRecognizedLanguages()
-                                    val elementCornerPoints = element.getCornerPoints()
-                                    val elementFrame = element.getBoundingBox()
-                                }
-                            }
-                        }
-                    }
-                    .addOnFailureListener {
-                        showAlert("Failed to read text, exception")
-                    }
-            }
+            val detector = FirebaseVision.getInstance()
+                .onDeviceTextRecognizer
+            recognizeText(detector)
+        }
+        btn_recognize_text.setOnLongClickListener {
+            val detector = FirebaseVision.getInstance()
+                .cloudTextRecognizer
+            recognizeText(detector)
+            true
         }
 
         btn_face.setOnClickListener {
@@ -122,44 +99,71 @@ class MainActivity : AppCompatActivity() {
         btn_label.isLongClickable = true
         btn_label.setOnClickListener {
 
-            if (photoFile != null && photoFile?.exists() == true) {
-                val labeler = FirebaseVision.getInstance()
-                    .onDeviceImageLabeler
-
-                val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
-                val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
-                labeler.processImage(firebaseImage)
-                    .addOnSuccessListener {
-                        if (it.isNotEmpty()) {
-                            showAlert("Detected: ${it.map { "${it.text}\n" }}")
-                        } else {
-                            showAlert("Nothing detected!")
-                        }
-                    }
-                    .addOnFailureListener {
-                        showAlert("Nothing detected! Exception: $it")
-                    }
-            }
+            val labeler = FirebaseVision.getInstance()
+                .onDeviceImageLabeler
+            labelImage(labeler)
         }
 
         btn_label.setOnLongClickListener {
-            //            val labeler = FirebaseVision.getInstance()
-//                .cloudImageLabeler
-//            val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
-//            val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
-//            labeler.processImage(firebaseImage)
-//                .addOnSuccessListener {
-//                    if (it.isNotEmpty()) {
-//                        showAlert("Detected: ${it.first().text}")
-//                    } else {
-//                        showAlert("Nothing detected!")
-//                    }
-//                }
-//                .addOnFailureListener {
-//                    showAlert("Nothing detected! Exception: $it")
-//                }
-
+            val labeler = FirebaseVision.getInstance()
+                .cloudImageLabeler
+            labelImage(labeler)
             true
+        }
+    }
+
+    private fun labelImage(labeler: FirebaseVisionImageLabeler) {
+        if (photoFile != null && photoFile?.exists() == true) {
+
+            val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+            val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
+            labeler.processImage(firebaseImage)
+                .addOnSuccessListener {
+                    if (it.isNotEmpty()) {
+                        showAlert("Detected: ${it.map { "${it.text}\n" }}")
+                    } else {
+                        showAlert("Nothing detected!")
+                    }
+                }
+                .addOnFailureListener {
+                    showAlert("Nothing detected! Exception: $it")
+                }
+        }
+    }
+
+    private fun recognizeText(detector: FirebaseVisionTextRecognizer) {
+        if (photoFile != null && photoFile?.exists() == true) {
+            val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+            val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
+            val result = detector.processImage(firebaseImage)
+                .addOnSuccessListener {
+                    val resultText = it.getText()
+                    showAlert(resultText)
+                    for (block in it.getTextBlocks()) {
+                        val blockText = block.getText()
+                        val blockConfidence = block.getConfidence()
+                        val blockLanguages = block.getRecognizedLanguages()
+                        val blockCornerPoints = block.getCornerPoints()
+                        val blockFrame = block.getBoundingBox()
+                        for (line in block.getLines()) {
+                            val lineText = line.getText()
+                            val lineConfidence = line.getConfidence()
+                            val lineLanguages = line.getRecognizedLanguages()
+                            val lineCornerPoints = line.getCornerPoints()
+                            val lineFrame = line.getBoundingBox()
+                            for (element in line.getElements()) {
+                                val elementText = element.getText()
+                                val elementConfidence = element.getConfidence()
+                                val elementLanguages = element.getRecognizedLanguages()
+                                val elementCornerPoints = element.getCornerPoints()
+                                val elementFrame = element.getBoundingBox()
+                            }
+                        }
+                    }
+                }
+                .addOnFailureListener {
+                    showAlert("Failed to read text, exception")
+                }
         }
     }
 
