@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.bumptech.glide.Glide
+import com.camerakit.CameraKit
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
@@ -41,6 +42,8 @@ class MainActivity : AppCompatActivity() {
         camera.setOnClickListener {
             btn_capture.performClick()
         }
+
+        camera.flash = CameraKit.FLASH_AUTO
 
         picture.setOnClickListener {
             btn_retake.performClick()
