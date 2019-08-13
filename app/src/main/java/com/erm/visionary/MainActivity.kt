@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
                 val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
                 val detector = FirebaseVision.getInstance()
-                    .onDeviceTextRecognizer
+                    .onDeviceTextRecognizer //.cloudRecognizer
                 val result = detector.processImage(firebaseImage)
                     .addOnSuccessListener {
                         val resultText = it.getText()
@@ -93,24 +93,73 @@ class MainActivity : AppCompatActivity() {
 
             if (photoFile != null && photoFile?.exists() == true) {
                 val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+                val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
                 val firebaseOptions = FirebaseVisionFaceDetectorOptions.Builder()
                     .setPerformanceMode(FirebaseVisionFaceDetectorOptions.ACCURATE)
                     .setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
                     .setClassificationMode(FirebaseVisionFaceDetectorOptions.ALL_CLASSIFICATIONS)
                     .build()
-                val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
                 val detector = FirebaseVision.getInstance()
                     .getVisionFaceDetector(firebaseOptions)
 
                 val result = detector.detectInImage(firebaseImage)
                     .addOnSuccessListener {
-                        val smiling = it.first().smilingProbability
-                        showAlert("Smiling probability $smiling")
+                        if (it.isNotEmpty()) {
+                            val smiling = it.first().smilingProbability
+                            val leftEye = it.first().leftEyeOpenProbability
+                            val rightEye = it.first().rightEyeOpenProbability
+                            showAlert("Smiling probability $smiling\nLeft Eye prob: $leftEye\nRight Eye prob: $rightEye")
+                        } else {
+                            showAlert("No smile detected!")
+                        }
                     }
                     .addOnFailureListener {
                         showAlert("Failed to detect face, ex $it")
                     }
             }
+        }
+
+        btn_label.isLongClickable = true
+        btn_label.setOnClickListener {
+
+            if (photoFile != null && photoFile?.exists() == true) {
+                val labeler = FirebaseVision.getInstance()
+                    .onDeviceImageLabeler
+
+                val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+                val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
+                labeler.processImage(firebaseImage)
+                    .addOnSuccessListener {
+                        if (it.isNotEmpty()) {
+                            showAlert("Detected: ${it.map { "${it.text}\n" }}")
+                        } else {
+                            showAlert("Nothing detected!")
+                        }
+                    }
+                    .addOnFailureListener {
+                        showAlert("Nothing detected! Exception: $it")
+                    }
+            }
+        }
+
+        btn_label.setOnLongClickListener {
+            //            val labeler = FirebaseVision.getInstance()
+//                .cloudImageLabeler
+//            val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+//            val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
+//            labeler.processImage(firebaseImage)
+//                .addOnSuccessListener {
+//                    if (it.isNotEmpty()) {
+//                        showAlert("Detected: ${it.first().text}")
+//                    } else {
+//                        showAlert("Nothing detected!")
+//                    }
+//                }
+//                .addOnFailureListener {
+//                    showAlert("Nothing detected! Exception: $it")
+//                }
+
+            true
         }
     }
 
