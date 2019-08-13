@@ -43,8 +43,6 @@ class MainActivity : AppCompatActivity() {
             btn_capture.performClick()
         }
 
-        camera.flash = CameraKit.FLASH_AUTO
-
         picture.setOnClickListener {
             btn_retake.performClick()
         }
