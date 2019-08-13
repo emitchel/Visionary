@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -27,10 +28,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         btn_capture.setOnClickListener {
-            captureAndSetImage()
+            captureAndSetImage {}
         }
         btn_switch_camera.setOnClickListener { camera?.toggleFacing() }
         btn_retake.setOnClickListener {
+            photoFile = null
             picture.visibility = View.GONE
             camera.visibility = View.VISIBLE
         }
@@ -44,6 +46,7 @@ class MainActivity : AppCompatActivity() {
             val detector = FirebaseVision.getInstance()
                 .cloudTextRecognizer
             recognizeText(detector)
+            Toast.makeText(this, "Using the cloud!", Toast.LENGTH_LONG).show()
             true
         }
 
@@ -74,6 +77,8 @@ class MainActivity : AppCompatActivity() {
                     .addOnFailureListener {
                         showAlert("Failed to detect face, ex $it")
                     }
+            } else {
+                captureAndSetImage { btn_face.performClick() }
             }
         }
 
@@ -89,11 +94,12 @@ class MainActivity : AppCompatActivity() {
             val labeler = FirebaseVision.getInstance()
                 .cloudImageLabeler
             labelImage(labeler)
+            Toast.makeText(this, "Using the cloud!", Toast.LENGTH_LONG).show()
             true
         }
     }
 
-    private fun captureAndSetImage() {
+    private fun captureAndSetImage(listener: () -> Unit) {
         camera?.captureImage { _, capturedImageBytes ->
             photoFile = File(
                 Environment.getExternalStoragePublicDirectory(
@@ -109,7 +115,7 @@ class MainActivity : AppCompatActivity() {
             } finally {
                 outputStream.close()
             }
-
+            listener.invoke()
             Glide.with(this@MainActivity).load(capturedImageBytes).into(picture)
             camera?.visibility = View.GONE
             picture.visibility = View.VISIBLE
@@ -132,6 +138,8 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     showAlert("Nothing detected! Exception: $it")
                 }
+        } else {
+            captureAndSetImage { labelImage(labeler) }
         }
     }
 
@@ -168,6 +176,8 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     showAlert("Failed to read text, exception")
                 }
+        } else {
+            captureAndSetImage { recognizeText(detector) }
         }
     }
 
