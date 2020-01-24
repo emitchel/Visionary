@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.bumptech.glide.Glide
-import com.camerakit.CameraKit
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
@@ -80,8 +79,11 @@ class MainActivity : AppCompatActivity() {
                             val smiling = it.first().smilingProbability
                             val leftEye = it.first().leftEyeOpenProbability
                             val rightEye = it.first().rightEyeOpenProbability
+
                             showAlert("Smiling probability $smiling\nLeft Eye prob: $leftEye\nRight Eye prob: $rightEye")
                         } else {
+                            val fds = "fds , fdsa "
+                            var split = fds.split(",")
                             showAlert("No smile detected!")
                         }
                     }
@@ -101,12 +103,40 @@ class MainActivity : AppCompatActivity() {
             labelImage(labeler)
         }
 
+
+
         btn_label.setOnLongClickListener {
             val labeler = FirebaseVision.getInstance()
                 .cloudImageLabeler
             labelImage(labeler)
             Toast.makeText(this, "Using the cloud!", Toast.LENGTH_LONG).show()
             true
+        }
+
+        btn_hotdog.setOnClickListener {
+            if (photoFile != null && photoFile?.exists() == true) {
+
+                val labeler = FirebaseVision.getInstance()
+                    .cloudImageLabeler
+                val bitmap = BitmapFactory.decodeFile(photoFile!!.path)
+                val firebaseImage = FirebaseVisionImage.fromBitmap(bitmap)
+                val hotdog = arrayOf("hotdog", "hot dog")
+                labeler.processImage(firebaseImage)
+                    .addOnSuccessListener {
+                        if (it.isNotEmpty()) {
+                            if (it.any { hotdog.contains(it.text.toLowerCase()) }) {
+                                showAlert("Hot dog detected ${it.map { "${it.text}\n " }}")
+                            } else {
+                                showAlert("Not a hot dog")
+                            }
+                        } else {
+                            showAlert("not a hot dog")
+                        }
+                    }
+                    .addOnFailureListener {
+                        showAlert("No hot dog?: $it")
+                    }
+            }
         }
     }
 
@@ -141,7 +171,11 @@ class MainActivity : AppCompatActivity() {
             labeler.processImage(firebaseImage)
                 .addOnSuccessListener {
                     if (it.isNotEmpty()) {
-                        showAlert("Detected: ${it.map { "${it.text}\n" }}")
+                        showAlert("Detected: ${it.sortedBy { it.confidence }.reversed().map {
+                            "${it.text} (${it.confidence.toString().take(
+                                4
+                            )}\n"
+                        }}")
                     } else {
                         showAlert("Nothing detected!")
                     }
@@ -223,3 +257,5 @@ class MainActivity : AppCompatActivity() {
         camera.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
+
+class NumCount(var num: Int, var occurences: Int)
